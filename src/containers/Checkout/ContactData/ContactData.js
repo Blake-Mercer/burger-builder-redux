@@ -8,6 +8,7 @@ import Spinner from '../../../components/UI/Spinner/Spinner';
 import Input from '../../../components/UI/Input/Input';
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler';
 import * as orderActions from '../../../store/actions/index';
+import { updateObject, checkValidity } from '../../../shared/utilities';
 
 export class ContactData extends Component {
   state = {
@@ -114,47 +115,19 @@ export class ContactData extends Component {
     this.props.onOrderBurger(order, this.props.token);
   };
 
-  checkValidity = (value, rules) => {
-    if (rules.required && value.trim() === '') return false;
-    if (rules.minLength && value.length < rules.minLength) return false;
-    if (rules.maxLength && value.length > rules.maxLength) return false;
-
-    const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-    if (rules.isEmail) {
-      return pattern.test(value);
-    }
-    const pattern2 = /^\d+$/;
-    if (rules.isNumeric) {
-      return pattern2.test(value);
-    }
-
-    return true;
-  };
-
   inputChangedHandler = (e, inputId) => {
-    // We need to immutably update the state.
-    // An immutable array or object is a unique copy of the original that, when manipulated, does not affect the original.
-    //You don't want to alter the state before calling "setState" so we need to deep clone in order to access the nested objects
-
-    // copy the properties of orderForm into the updatedOrderForm variable
-    const updatedOrderForm = {
-      ...this.state.orderForm,
-    };
-    // copy the properties of the nested form elements
-    const updatedFormElement = {
-      ...updatedOrderForm[inputId],
-    };
-    // set the input value equal to the form event
-    updatedFormElement.value = e.target.value;
-    // check the validity of each form input.
-    updatedFormElement.valid = this.checkValidity(
-      updatedFormElement.value,
-      updatedFormElement.validation
-    );
-
-    updatedFormElement.touched = true;
-    // set the original form clone properties equal to the updatedFormElements with the new value at the value property
-    updatedOrderForm[inputId] = updatedFormElement;
+    // need to deep clone nested objects to access there data.
+    const updatedFormElement = updateObject(this.state.orderForm[inputId], {
+      value: e.target.value,
+      valid: checkValidity(
+        e.target.value,
+        this.state.orderForm[inputId].validation
+      ),
+      touched: true,
+    });
+    const updatedOrderForm = updateObject(this.state.orderForm, {
+      [inputId]: updatedFormElement,
+    });
 
     let formIsValid = true;
     for (let inputId in updatedOrderForm) {
