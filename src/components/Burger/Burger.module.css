@@ -8,6 +8,8 @@
   font-size: 1.2rem;
   margin-bottom: 0rem;
   margin-top: 5rem;
+  background: burlywood;
+  border-radius: 10px;
 }
 @media (min-width: 500px) and (min-height: 400px) {
   .Burger {
